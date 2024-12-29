@@ -1,50 +1,109 @@
-﻿    using PdfSharpCore.Pdf;
-    using PdfSharpCore.Pdf.IO;
+﻿using UglyToad.PdfPig;
+using UglyToad.PdfPig.Content;
+using UglyToad.PdfPig.Writer;
 
-    namespace audit_helper;
+namespace audit_helper;
 
 class Program
 {
     static void Main(string[] args)
     {
-        Console.WriteLine("Hello, World!");
+        string inputFilePath = @"C:\repos\_PRIVATE\audit-helper\invoices\invoice_fuzion.pdf";
+        string outputDirectory = @"C:\repos\_PRIVATE\audit-helper\invoices";
 
-
-        string inputFilePath = "file.pdf";
-        string outputDirectory = "file_name";
-
-        PdfDocument inputDocument = PdfReader.Open(inputFilePath, PdfDocumentOpenMode.Import);
-
-        int totalPages = inputDocument.PageCount;
-        Console.WriteLine($"Total page: {totalPages}");
-
-        int currentPage = 0;
-        while (currentPage < totalPages)
+        int currentPage = 1;
+        using (var stream = File.OpenRead(inputFilePath))
+        using (PdfDocument inputDocument = PdfDocument.Open(stream))
         {
-            PdfDocument newDocument = new PdfDocument();
+            int totalPages = inputDocument.NumberOfPages;
+            Console.WriteLine($"Total page: {totalPages}");
 
-            int startPage = currentPage;
-            int endPage = FindInvoiceEndPage(inputDocument, currentPage);
-
-            for (int i = startPage; i <= endPage; i++)
+            while (currentPage <= totalPages)
             {
-                newDocument.AddPage(inputDocument.Pages[i]);
+                var startPage = currentPage;
+                var endPage = FindInvoiceEndPage(inputDocument, currentPage);
+
+                var builder = new PdfDocumentBuilder();
+
+                for (var i = startPage; i <= endPage; i++)
+                {
+                    builder.AddPage(inputDocument, i);
+                }
+
+                byte[] fileBytes = builder.Build();
+
+                var invoiceName = ExtractInvoiceName(inputDocument.GetPage(startPage));
+                if (string.IsNullOrWhiteSpace(invoiceName))
+                {
+                    invoiceName = $"Invoice_{startPage}-{endPage}";
+                }
+
+
+                var outputFilePath = Path.Combine(outputDirectory, $"{invoiceName}.pdf");
+                File.WriteAllBytes(outputFilePath, fileBytes);
+
+                Console.WriteLine($"Saved: {outputFilePath}");
+
+                currentPage = endPage + 1;
             }
-
-            string outputFilePath = Path.Combine(outputDirectory, $"Invoice_{startPage + 1}-{endPage + 1}.pdf");
-            newDocument.Save(outputFilePath);
-
-            Console.WriteLine($"Saved: {outputFilePath}");
-
-            currentPage = endPage + 1;
         }
 
         Console.WriteLine("Finnished.");
     }
 
-    static int FindInvoiceEndPage(PdfDocument document, int startPage)
+    private static int FindInvoiceEndPage(PdfDocument document, int startPage)
     {
-        return startPage;
+        var totalPages = document.NumberOfPages;
+        for (var i = startPage; i <= totalPages; i++)
+        {
+            if (i + 1 > totalPages) continue;
+
+            var pageText = ExtractTextFromPage(document.GetPage(i + 1));
+
+            if (ContainsInvoiceHeader(pageText))
+            {
+                return i;
+            }
+        }
+
+        return totalPages;
+    }
+
+    private static string ExtractTextFromPage(Page page)
+    {
+        var pageText = string.Join(" ", page.GetWords()).ToLower();
+
+        return pageText;
+    }
+
+    private static string ExtractInvoiceName(Page page)
+    {
+        var invoiceKeyword = "/2024";
+        foreach (var word in page.GetWords().ToArray())
+        {
+            if (word.Text.Contains(invoiceKeyword, StringComparison.OrdinalIgnoreCase))
+            {
+                var result = word.Text.Replace('/', '_');
+                return result;
+            }
+        }
+
+        return "";
+    }
+
+    static bool ContainsInvoiceHeader(string pageText)
+    {
+        // string[] invoiceKeywords = { "Faktura VAT", "Invoice No", "Nr faktury", "Data wystawienia" };
+        string[] invoiceKeywords = { "Data wystawienia" };
+        foreach (var keyword in invoiceKeywords)
+        {
+            if (pageText.Contains(keyword, StringComparison.OrdinalIgnoreCase))
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 }
 
