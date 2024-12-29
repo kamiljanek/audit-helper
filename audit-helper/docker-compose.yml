@@ -1,0 +1,6 @@
+﻿services:
+  audit-helper:
+    image: audit-helper
+    build:
+      context: .
+      dockerfile: audit-helper/Dockerfile
