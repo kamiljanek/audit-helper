@@ -1,6 +1,8 @@
-﻿using UglyToad.PdfPig;
-using UglyToad.PdfPig.Content;
+﻿using PDFtoImage;
+using Tesseract;
 using UglyToad.PdfPig.Writer;
+using Page = UglyToad.PdfPig.Content.Page;
+using PdfDocument = UglyToad.PdfPig.PdfDocument;
 
 namespace audit_helper;
 
@@ -8,14 +10,19 @@ class Program
 {
     static void Main(string[] args)
     {
-        string inputFilePath = @"C:\repos\_PRIVATE\audit-helper\invoices\invoice_fuzion.pdf";
-        string outputDirectory = @"C:\repos\_PRIVATE\audit-helper\invoices";
+        string inputFilePath = @"C:\repos\_PRIVATE\audit-helper\invoices\invoice_scan.pdf";
+        string outputDirectory = @"C:\repos\_PRIVATE\audit-helper\invoices\splitted";
 
-        int currentPage = 1;
+        inputFilePath = ConvertPdfScanToJpeg(inputFilePath);
+
+        var pt = ExtractTextFromImage(inputFilePath);
+
+
+        var currentPage = 1;
         using (var stream = File.OpenRead(inputFilePath))
-        using (PdfDocument inputDocument = PdfDocument.Open(stream))
+        using (var inputDocument = PdfDocument.Open(stream))
         {
-            int totalPages = inputDocument.NumberOfPages;
+            var totalPages = inputDocument.NumberOfPages;
             Console.WriteLine($"Total page: {totalPages}");
 
             while (currentPage <= totalPages)
@@ -51,14 +58,26 @@ class Program
         Console.WriteLine("Finnished.");
     }
 
+    private static string ConvertPdfScanToJpeg(string inputFilePath)
+    {
+        using FileStream pdfStream = new FileStream(inputFilePath, FileMode.Open, FileAccess.Read);
+        var outputFilePath = Path.ChangeExtension(inputFilePath, ".jpeg");
+        using FileStream imageStream = new FileStream(outputFilePath, FileMode.Create, FileAccess.ReadWrite);
+        var a = new Index(0);
+        Conversion.SaveJpeg(imageStream, pdfStream, a);
+        return outputFilePath;
+    }
+
     private static int FindInvoiceEndPage(PdfDocument document, int startPage)
     {
         var totalPages = document.NumberOfPages;
         for (var i = startPage; i <= totalPages; i++)
         {
-            if (i + 1 > totalPages) continue;
+            var pageText = ExtractTextFromPage(document.GetPage(i));
 
-            var pageText = ExtractTextFromPage(document.GetPage(i + 1));
+            // if (i + 1 > totalPages) continue;
+
+            // var pageText = ExtractTextFromPage(document.GetPage(i + 1));
 
             if (ContainsInvoiceHeader(pageText))
             {
@@ -76,9 +95,20 @@ class Program
         return pageText;
     }
 
+    private static string ExtractTextFromImage(string imagePath)
+    {
+        var tessDataPath = @"C:\repos\_PRIVATE\audit-helper\invoices\tessdata";
+        using var engine = new TesseractEngine(tessDataPath, "pol", EngineMode.Default);
+
+        using var img = Pix.LoadFromFile(imagePath);
+        using var page = engine.Process(img);
+
+        return page.GetText();
+    }
+
     private static string ExtractInvoiceName(Page page)
     {
-        var invoiceKeyword = "/2024";
+        var invoiceKeyword = "/2023";
         foreach (var word in page.GetWords().ToArray())
         {
             if (word.Text.Contains(invoiceKeyword, StringComparison.OrdinalIgnoreCase))
