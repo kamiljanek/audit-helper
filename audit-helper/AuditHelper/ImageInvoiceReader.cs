@@ -15,11 +15,6 @@ public class ImageInvoiceReader : IInvoiceReader
 
         var invoiceName = pageText.GetInvoiceName();
 
-        if (string.IsNullOrWhiteSpace(invoiceName))
-        {
-            invoiceName = "unknown";
-        }
-
         try
         {
             var newFileName = DirectoryHelper.GenerateNewFileName(inputFileName, invoiceName, 1);
@@ -31,6 +26,5 @@ public class ImageInvoiceReader : IInvoiceReader
         {
             Console.WriteLine($"Fail: {ex.Message}");
         }
-
     }
 }

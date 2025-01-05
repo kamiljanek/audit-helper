@@ -6,11 +6,15 @@ class Program
 {
     static void Main(string[] args)
     {
-        string inputFileName = @"C:\repos\_PRIVATE\audit-helper\invoices\invoice_de.pdf";
+        string directoryPath = @"C:\repos\_PRIVATE\audit-helper\invoices\to work";
 
-        // UNDONE: add here reading all from directory
-        var splitter = new InvoiceSplitter(inputFileName);
-        splitter.Split();
+        var fileNames = Directory.GetFiles(directoryPath, "*", SearchOption.TopDirectoryOnly).ToList();
+
+        foreach (var fileName in fileNames)
+        {
+            var splitter = new InvoiceSplitter(fileName);
+            splitter.Split();
+        }
 
         Console.WriteLine("Finnish.");
     }
