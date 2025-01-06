@@ -1,6 +1,4 @@
-﻿using Tesseract;
-
-namespace audit_helper;
+﻿namespace audit_helper;
 
 public class ImageInvoiceReader : IInvoiceReader
 {

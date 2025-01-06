@@ -7,6 +7,7 @@ namespace audit_helper;
 public class PdfInvoiceReader : IInvoiceReader
 {
     private readonly string _inputFileName;
+    private readonly PdfConverter _pdfConverter;
     private string _currentConvertedFileName;
     private string _currentInvoiceName = "";
     private string _nextInvoiceName = "";
@@ -15,6 +16,8 @@ public class PdfInvoiceReader : IInvoiceReader
     public PdfInvoiceReader(string inputFileName)
     {
         _inputFileName = inputFileName;
+        _pdfConverter = new PdfConverter();
+
     }
 
     public void SplitFile()
@@ -62,7 +65,7 @@ public class PdfInvoiceReader : IInvoiceReader
         if (string.IsNullOrWhiteSpace(_currentInvoiceName))
         {
             var searchingName = Path.GetFileNameWithoutExtension(_inputFileName);
-            if (totalPages <= _singleInvoiceMaxPages && TryFindInvoiceName(document, 1, out _currentInvoiceName, searchingName: searchingName, useImageRecognition: true))
+            if (totalPages <= _singleInvoiceMaxPages & TryFindInvoiceName(document, 1, out _currentInvoiceName, searchingName: searchingName, useImageRecognition: true))
             {
                 return totalPages;
             }
@@ -94,7 +97,7 @@ public class PdfInvoiceReader : IInvoiceReader
         var pageText = ExtractTextFromPdfPage(document.GetPage(pageNumber));
         if (string.IsNullOrWhiteSpace(pageText))
         {
-            _currentConvertedFileName = PdfConverter.PdfToJpeg(_inputFileName, pageNumber);
+            _currentConvertedFileName = _pdfConverter.PdfToJpeg(_inputFileName, pageNumber);
             pageText = ImageReader.GetTextDefault(_currentConvertedFileName);
         }
 

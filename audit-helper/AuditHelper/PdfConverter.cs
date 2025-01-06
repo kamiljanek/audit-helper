@@ -4,12 +4,12 @@ namespace audit_helper;
 
 public class PdfConverter
 {
-    private static int _fileCounter = 0;
+    private int _fileCounter = 0;
     public PdfConverter()
     {
     }
 
-    public static string PdfToJpeg(string inputFileName, int pageNumber)
+    public string PdfToJpeg(string inputFileName, int pageNumber)
     {
         var outputFilePath = Path.Combine(Path.GetDirectoryName(inputFileName)!, Common.ConvertedDirectoryName);
         Directory.CreateDirectory(outputFilePath);

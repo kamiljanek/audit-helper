@@ -58,10 +58,11 @@ public static class PhraseFinderHelper
             {
                 invoiceName = matches[0].Groups[1].Value.ToUpper();
                 Console.WriteLine($"Invoice name: {invoiceName}");
+                return invoiceName.Replace('/', '_');
             }
         }
 
-        return invoiceName.Replace('/', '_');
+        return invoiceName;
     }
 
     public static string GetInvoiceName(this List<string> pageTexts)
@@ -84,12 +85,12 @@ public static class PhraseFinderHelper
                 {
                     invoiceName = matches[0].Groups[1].Value.ToUpper();
                     Console.WriteLine($"Invoice name: {invoiceName}");
-                    break;
+                    return invoiceName.Replace('/', '_');
                 }
             }
         }
 
-        return invoiceName.Replace('/', '_');
+        return invoiceName;
     }
 
     public static bool ContainsName(this string pageText, string fileName)
