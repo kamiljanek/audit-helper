@@ -4,21 +4,24 @@ namespace audit_helper;
 
 public class ImageInvoiceReader : IInvoiceReader
 {
-    public ImageInvoiceReader()
-    {
+    private readonly string _inputFileName;
 
+    public ImageInvoiceReader(string inputFileName)
+    {
+        _inputFileName = inputFileName;
     }
 
-    public void SplitFile(TesseractEngine engine, string inputFileName)
+    public void SplitFile()
     {
-        var pageText = ImageReader.GetText(engine, inputFileName);
+        var pageText = ImageReader.GetTextDefault(_inputFileName);
 
-        var invoiceName = pageText.GetInvoiceName();
+        var fileName = Path.GetFileNameWithoutExtension(_inputFileName);
+        var invoiceName = pageText.ContainsName(fileName) ? fileName : pageText.GetInvoiceName();
 
         try
         {
-            var newFileName = DirectoryHelper.GenerateNewFileName(inputFileName, invoiceName, 1);
-            File.Copy(inputFileName, $"{newFileName}", overwrite: false);
+            var newFileName = DirectoryHelper.GenerateNewFileName(_inputFileName, invoiceName, 1);
+            File.Copy(_inputFileName, $"{newFileName}", overwrite: false);
 
             Console.WriteLine($"Saved: {newFileName}");
         }

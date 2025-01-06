@@ -12,12 +12,12 @@ public class DirectoryHelper
         Directory.CreateDirectory(outputFilePath);
         var outputFileName = Path.Combine(outputFilePath, $"{prefix}{newFileName}{fileExtension}");
 
-        EnsureUniqueName(outputFileName);
+        EnsureUniqueName(ref outputFileName);
 
         return outputFileName;
     }
 
-    private static void EnsureUniqueName(string inputFileName)
+    private static void EnsureUniqueName(ref string inputFileName)
     {
         if (File.Exists(inputFileName))
         {

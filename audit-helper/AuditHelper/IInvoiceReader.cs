@@ -4,5 +4,5 @@ namespace audit_helper;
 
 public interface IInvoiceReader
 {
-    public void SplitFile(TesseractEngine engine, string inputFileName);
+    public void SplitFile();
 }

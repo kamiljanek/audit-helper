@@ -14,7 +14,7 @@ public class PdfConverter
         var outputFilePath = Path.Combine(Path.GetDirectoryName(inputFileName)!, Common.ConvertedDirectoryName);
         Directory.CreateDirectory(outputFilePath);
 
-        var fileName = Path.GetFileName(inputFileName);
+        var fileName = Path.GetFileNameWithoutExtension(inputFileName);
         var changedFileName = Path.Combine(outputFilePath, $"{fileName}-{_fileCounter}");
         var newFileName = Path.ChangeExtension(changedFileName, ".jpeg");
 

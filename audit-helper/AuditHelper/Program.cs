@@ -1,6 +1,4 @@
-﻿using System.Text.RegularExpressions;
-
-namespace audit_helper;
+﻿namespace audit_helper;
 
 class Program
 {
@@ -9,11 +7,11 @@ class Program
         string directoryPath = @"C:\repos\_PRIVATE\audit-helper\invoices\to work";
 
         var fileNames = Directory.GetFiles(directoryPath, "*", SearchOption.TopDirectoryOnly).ToList();
+        var splitter = new InvoiceSplitter();
 
         foreach (var fileName in fileNames)
         {
-            var splitter = new InvoiceSplitter(fileName);
-            splitter.Split();
+            splitter.Split(fileName);
         }
 
         Console.WriteLine("Finnish.");
