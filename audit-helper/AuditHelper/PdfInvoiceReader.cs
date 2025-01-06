@@ -120,6 +120,7 @@ public class PdfInvoiceReader : IInvoiceReader
     {
         invoiceName = Common.UnknownName;
         var pageTexts = new List<string>();
+        string extractedInvoiceName;
 
         var pageText = ExtractTextFromPage(document, pageNumber);
 
@@ -132,17 +133,17 @@ public class PdfInvoiceReader : IInvoiceReader
             }
         }
 
-        var extractedInvoiceName = pageText.GetInvoiceName();
+        extractedInvoiceName = pageText.GetInvoiceName();
         if (extractedInvoiceName != Common.UnknownName)
         {
             invoiceName = extractedInvoiceName;
-            return true;
+            return false;
         }
 
         if (useImageRecognition)
         {
             var bitmap = ImageReader.PreprocessImage(_currentConvertedFileName);
-            var languages = new Func<string>[]
+            var languages = new []
             {
                 () => ImageReader.GetTextPl(bitmap),
                 () => ImageReader.GetTextEn(bitmap),
