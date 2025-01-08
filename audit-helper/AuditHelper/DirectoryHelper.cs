@@ -2,7 +2,7 @@
 
 namespace audit_helper;
 
-public class DirectoryHelper
+public static class DirectoryHelper
 {
     public static string GenerateNewFileName(string originalFileName, string newFileName, int numberOfPages)
     {
@@ -27,7 +27,7 @@ public class DirectoryHelper
 
     private static void UpdateName(ref string inputFileName)
     {
-        var directoryPath = Path.GetDirectoryName(inputFileName);
+        var directoryPath = Path.GetDirectoryName(inputFileName)!;
         var fileName = Path.GetFileNameWithoutExtension(inputFileName);
         var fileExtension = Path.GetExtension(inputFileName);
 

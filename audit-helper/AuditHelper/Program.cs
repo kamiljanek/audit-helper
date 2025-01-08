@@ -7,8 +7,10 @@ class Program
     static async Task Main(string[] args)
     {
         var sw = new Stopwatch();
+        // string directoryPath = @"C:\repos\_PRIVATE\audit-helper\invoices\to work";
+        Console.WriteLine("Write path to folder with files to separate:");
+        string directoryPath = Console.ReadLine()!;
         sw.Start();
-        string directoryPath = @"C:\repos\_PRIVATE\audit-helper\invoices\to work";
 
         var fileNames = Directory.GetFiles(directoryPath, "*", SearchOption.TopDirectoryOnly).ToList();
 
@@ -20,10 +22,20 @@ class Program
             tasks.Add(Task.Run(() => splitter.Split(fileName)));
         }
 
-        await Task.WhenAll(tasks);
+        try
+        {
+            await Task.WhenAll(tasks);
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+            Console.ReadKey();
+            throw;
+        }
 
         Console.WriteLine("Finnish.");
         Console.WriteLine(sw.ElapsedMilliseconds);
+        Console.ReadKey();
     }
 }
 

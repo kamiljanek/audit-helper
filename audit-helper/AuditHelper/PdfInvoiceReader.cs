@@ -8,16 +8,18 @@ public class PdfInvoiceReader : IInvoiceReader
 {
     private readonly string _inputFileName;
     private readonly PdfConverter _pdfConverter;
-    private string _currentConvertedFileName;
+    private readonly ImageReader _imageReader;
+    private string _currentConvertedFileName = "";
     private string _currentInvoiceName = "";
     private string _nextInvoiceName = "";
-    private int _singleInvoiceMaxPages = 5;
+    private const int _singleInvoiceMaxPages = 5;
+
 
     public PdfInvoiceReader(string inputFileName)
     {
         _inputFileName = inputFileName;
         _pdfConverter = new PdfConverter();
-
+        _imageReader = new ImageReader();
     }
 
     public void SplitFile()
@@ -98,7 +100,7 @@ public class PdfInvoiceReader : IInvoiceReader
         if (string.IsNullOrWhiteSpace(pageText))
         {
             _currentConvertedFileName = _pdfConverter.PdfToJpeg(_inputFileName, pageNumber);
-            pageText = ImageReader.GetTextDefault(_currentConvertedFileName);
+            pageText = _imageReader.GetTextDefault(_currentConvertedFileName);
         }
 
         return pageText;
@@ -115,7 +117,7 @@ public class PdfInvoiceReader : IInvoiceReader
         PdfDocument document,
         int pageNumber,
         out string invoiceName,
-        string searchingName = null,
+        string searchingName = "",
         bool useImageRecognition = false)
     {
         invoiceName = Common.UnknownName;
@@ -142,13 +144,13 @@ public class PdfInvoiceReader : IInvoiceReader
 
         if (useImageRecognition)
         {
-            var bitmap = ImageReader.PreprocessImage(_currentConvertedFileName);
+            var bitmap = _imageReader.PreprocessImage(_currentConvertedFileName);
             var languages = new []
             {
-                () => ImageReader.GetTextPl(bitmap),
-                () => ImageReader.GetTextEn(bitmap),
-                () => ImageReader.GetTextDe(bitmap),
-                () => ImageReader.GetTextCz(bitmap)
+                () => _imageReader.GetTextPl(bitmap),
+                () => _imageReader.GetTextEn(bitmap),
+                () => _imageReader.GetTextDe(bitmap),
+                () => _imageReader.GetTextCz(bitmap)
             };
 
             foreach (var getText in languages)

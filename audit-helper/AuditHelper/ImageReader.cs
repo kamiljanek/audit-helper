@@ -6,7 +6,8 @@ namespace audit_helper;
 
 public class ImageReader
 {
-    private const string _tessDataPath = @"C:\repos\_PRIVATE\audit-helper\invoices\tessdata";
+    private readonly string _tessDataPath;
+    // private const string _tessDataPath = @"C:\repos\_PRIVATE\audit-helper\invoices\tessdata";
     private const string _alphabetPl = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789 ąĄćĆęĘłŁńŃóÓśŚźŹżŻ";
     private const string _alphabetEn = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789 ";
     private const string _alphabetDe = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789 äÄöÖüÜß";
@@ -16,9 +17,15 @@ public class ImageReader
     private const string _languageDe = "deu";
     private const string _languageCz = "ces";
 
-    public static string GetTextDefault(string fileName)
+    public ImageReader()
     {
-        using var engine = new TesseractEngine(_tessDataPath, _languagePl, EngineMode.TesseractAndLstm);
+        var exeDirectory = AppDomain.CurrentDomain.BaseDirectory;
+        _tessDataPath = Path.Combine(exeDirectory, "tessdata");
+    }
+
+    public string GetTextDefault(string fileName)
+    {
+        using var engine = new TesseractEngine(_tessDataPath, "pol", EngineMode.TesseractAndLstm);
 
         using var img = Pix.LoadFromFile(fileName);
         using var page = engine.Process(img);
@@ -28,31 +35,31 @@ public class ImageReader
         return result;
     }
 
-    public static string GetTextPl(Bitmap processedImage)
+    public string GetTextPl(Bitmap processedImage)
     {
         var result = GetTextByLanguage(processedImage, _languagePl, _alphabetPl);
         return result;
     }
 
-    public static string GetTextEn(Bitmap processedImage)
+    public string GetTextEn(Bitmap processedImage)
     {
         var result = GetTextByLanguage(processedImage, _languageEn, _alphabetEn);
         return result;
     }
 
-    public static string GetTextDe(Bitmap processedImage)
+    public string GetTextDe(Bitmap processedImage)
     {
         var result = GetTextByLanguage(processedImage, _languageDe, _alphabetDe);
         return result;
     }
 
-    public static string GetTextCz(Bitmap processedImage)
+    public string GetTextCz(Bitmap processedImage)
     {
         var result = GetTextByLanguage(processedImage, _languageCz, _alphabetCz);
         return result;
     }
 
-    public static Bitmap PreprocessImage(string imagePath)
+    public Bitmap PreprocessImage(string imagePath)
     {
         Bitmap originalImage = new Bitmap(imagePath);
 
@@ -102,7 +109,7 @@ public class ImageReader
         return binaryImage;
     }
 
-    private static string GetTextByLanguage(Bitmap processedImage, string language, string charWhitelist)
+    private string GetTextByLanguage(Bitmap processedImage, string language, string charWhitelist)
     {
         using var engine = new TesseractEngine(_tessDataPath, language, EngineMode.TesseractAndLstm);
         engine.SetVariable("tessedit_char_whitelist", charWhitelist);
@@ -114,7 +121,7 @@ public class ImageReader
         return page.GetText();
     }
 
-    private static Pix BitmapToPix(Bitmap bitmap)
+    private Pix BitmapToPix(Bitmap bitmap)
     {
         int bytesPerPixel = Image.GetPixelFormatSize(bitmap.PixelFormat) / 8;
 
